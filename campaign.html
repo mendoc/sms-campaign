@@ -21,6 +21,11 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap"
       rel="stylesheet"
     />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
+    <link rel="stylesheet" href="assets/css/loader.css" />
 
     <style>
       body {
@@ -30,22 +35,39 @@
       }
     </style>
 
-    <title>SMS Routeur</title>
+    <title id="page-title">SMS Routeur</title>
   </head>
 
   <body>
-    <div class="container">
+    <div
+    id="loader-block"
+    class="h-100 justify-content-center align-items-center mt-3"
+    style="display: none"
+  >
+    <div class="loader"></div>
+  </div>
+    <div id="content-block" class="container animate__animated animate__fadeIn" style="display: none">
       <div class="d-flex justify-content-between align-items-center mt-3">
-        <span class="fs-1"><a class="text-decoration-none text-dark" href="/">SMS Routeur</a></span>
-        <span class="fs-5"
-          >Par
-          <a
-            class="text-decoration-none"
-            href="https://github.com/mendoc"
-            target="_blank"
-            >Dimitri ONGOUA</a
+        <span class="fs-1"
+          ><a class="text-decoration-none text-dark" href="/"
+            >SMS Routeur</a
           ></span
         >
+        <div class="d-flex justify-content- align-items-center">
+          <img
+            id="profile-picture"
+            src="/"
+            alt="Profile picture"
+            class="w-25 img-thumbnail rounded-circle me-1"
+          />
+          <button
+            id="btn-logout"
+            type="button"
+            class="btn btn-link btn-sm fs-6 text-decoration-none text-secondary"
+          >
+            Se déconnecter
+          </button>
+        </div>
       </div>
       <div
         class="d-flex justify-content-between align-items-center flex-column m-auto mt-5 p-3"
@@ -54,7 +76,9 @@
           class="w-100 mb-3 pb-3 d-flex justify-content-between align-items-center border-bottom"
         >
           <h2 id="campaign-name">{{campaign.name}}</h2>
-          <button class="btn btn-md btn-primary" id="btn-launch-campaign">Lancer la campagne</button>
+          <button class="btn btn-md btn-primary" id="btn-launch-campaign">
+            Lancer la campagne
+          </button>
         </div>
         <div class="w-100 mb-5">
           <span class="fs-4">Détails de la campagne</span>
@@ -70,7 +94,7 @@
               <span class="fw-bold">Message &nbsp; &nbsp;</span>
             </div>
             <div class="d-flex flex-column">
-              <span id="campaign-author">--w</span>
+              <span id="campaign-author">--</span>
               <span id="campaign-createdAt">--</span>
               <span id="campaign-startedAt">--</span>
               <span id="campaign-endedAt">--</span>
@@ -101,7 +125,35 @@
         </div>
       </div>
     </div>
-
+    <script type="module">
+      import { logout, getCurrentUser } from "./assets/js/db.js";
+      import {
+        onClick,
+        setLoaderVisibility,
+        setContentVisibility,
+        goToHomePage,
+      } from "./assets/js/utils.js";
+      (() => {
+        setLoaderVisibility(true);
+        getCurrentUser((user) => {
+          const profilePictureEl = document.getElementById("profile-picture");
+          if (user) {
+            profilePictureEl.src = user.photoURL;
+            profilePictureEl.style.display = "inline";
+            setLoaderVisibility(false);
+            setContentVisibility(true);
+          } else {
+            // User is signed out
+            goToHomePage();
+          }
+        });
+        onClick("btn-logout", () => {
+          setLoaderVisibility(true);
+          setContentVisibility(false);
+          logout(console.error);
+        });
+      })();
+    </script>
     <script src="assets/js/campaign/db.js" type="module"></script>
     <script src="assets/js/popper.min.js"></script>
     <script src="assets/js/bootstrap.min.js"></script>

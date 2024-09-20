@@ -45,7 +45,11 @@ import {
         setTextContent("campaign-status", "En attente de lancement");
       }
 
+      const pageTitleEl = document.getElementById("page-title");
+
       setTextContent("campaign-name", campaignData.title);
+      setTextContent("page-title", `${pageTitleEl.textContent} - ${campaignData.title}`);
+      
       setTextContent("campaign-author", campaignData.author || "Inconnu");
       setTextContent("campaign-createdAt", formatDate(campaignData.createdAt));
       setTextContent("campaign-startedAt", formatDate(campaignData.startedAt));
