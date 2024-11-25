@@ -5,10 +5,9 @@
   const DISCOVERY_DOC =
     "https://sheets.googleapis.com/$discovery/rest?version=v4";
   const SCOPES = "https://www.googleapis.com/auth/spreadsheets.readonly";
-  const CLIENT_ID =
-    "738073783804-1jv29evpi9j7er483mcq8d954rmsa0fs.apps.googleusercontent.com";
-  const API_KEY = "AIzaSyCtgzjDM11qSIzxlYVj39o8cYyR0IqGa3Q";
-  const APP_ID = "738073783804";
+  const CLIENT_ID = "";
+  const API_KEY = "";
+  const APP_ID = "";
 
   // Use the API Loader script to load google.picker
   function onApiLoad() {
@@ -108,6 +107,7 @@
   document
     .getElementById("btn-import-recipients")
     .addEventListener("click", createPicker);
+
   window.addEventListener("load", function () {
     onApiLoad();
     gisLoaded();

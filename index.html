@@ -82,7 +82,6 @@
         getCurrentUser((user) => {
           if (user) {
             const uid = user.uid;
-            console.log(user);
             location.href = "/new.html";
           } else {
             console.log("User is signed out");

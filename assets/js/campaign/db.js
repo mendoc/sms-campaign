@@ -10,14 +10,7 @@ import {
 
 (async () => {
   const firebaseConfig = {
-    apiKey: "AIzaSyBLI-SZHzfQgxAjyp0Dt90xyLnkYWYPYvs",
-    authDomain: "mes-infos.firebaseapp.com",
-    databaseURL: "https://mes-infos.firebaseio.com",
-    projectId: "mes-infos",
-    storageBucket: "mes-infos.appspot.com",
-    messagingSenderId: "738073783804",
-    appId: "1:738073783804:web:40ea2438006e43e3979679",
-    measurementId: "G-NCL06LW1VE",
+    // Votre configuration Firebase
   };
 
   // Initialize Firebase
@@ -28,22 +21,13 @@ import {
   const urlParams = new URLSearchParams(queryString);
   const campaignId = urlParams.get("c");
   const btnLaunchCampaign = document.getElementById("btn-launch-campaign");
+  const btnPrint = document.getElementById("btn-print");
+  
+  btnPrint.style = "display: none";
 
   if (campaignId) {
     const unsub = onSnapshot(doc(db, "progress", campaignId), async (doc) => {
       const campaignData = doc.data();
-
-      if (campaignData.end) {
-        btnLaunchCampaign.style = "display: none";
-        setTextContent("campaign-status", "Terminé");
-      } else if (campaignData.startedAt > 0) {
-        btnLaunchCampaign.classList.remove("btn-primary");
-        btnLaunchCampaign.classList.add("btn-success");
-        btnLaunchCampaign.textContent = "En cours";
-        setTextContent("campaign-status", "En cours");
-      } else {
-        setTextContent("campaign-status", "En attente de lancement");
-      }
 
       const pageTitleEl = document.getElementById("page-title");
 
@@ -53,7 +37,7 @@ import {
       setTextContent("campaign-author", campaignData.author || "Inconnu");
       setTextContent("campaign-createdAt", formatDate(campaignData.createdAt));
       setTextContent("campaign-startedAt", formatDate(campaignData.startedAt));
-      setTextContent("campaign-endedAt", formatDate(campaignData.endedAt));
+      setTextContent("campaign-endedAt", `${formatDate(campaignData.endedAt)} ${campaignData.endedAt ? "(" + diffDate(campaignData.startedAt, campaignData.endedAt) + ")" : ""}`);
       // TODO Afficher la progression
       setTextContent("campaign-nb-recipients", campaignData.recipients.length);
       setTextContent("campaign-device", await getDeviceInfo(campaignId));
@@ -64,8 +48,9 @@ import {
         campaignData.recipients.length
       );
 
-      const recipeintsEl = document.querySelector("table tbody");
+      const recipeintsEl = document.querySelector("#table-recipients tbody");
       recipeintsEl.innerHTML = "";
+      let msgSent = 0;
       campaignData.recipients.forEach((r, idx) => {
         recipeintsEl.innerHTML += `<tr>
                 <th scope="row">${idx + 1}</th>
@@ -77,8 +62,25 @@ import {
                     : '<p class="fst-italic">En attente ...</p>'
                 }</td>
               </tr>`;
+              if (r.sent) msgSent++ 
       });
+
+      if (campaignData.end) {
+        btnLaunchCampaign.style = "display: none";
+        btnPrint.style = "display: block";
+        setTextContent("campaign-status", "Terminé");
+      } else if (campaignData.startedAt > 0) {
+        btnLaunchCampaign.setAttribute("disabled", true);
+        btnLaunchCampaign.classList.remove("btn-primary");
+        btnLaunchCampaign.classList.add("btn-success");
+        btnLaunchCampaign.textContent = "En cours";
+        setTextContent("campaign-status", `En cours (${parseInt(100 * msgSent / campaignData.recipients.length)}%)`);
+      } else {
+        setTextContent("campaign-status", "En attente de lancement");
+      }
+
     });
+
 
     btnLaunchCampaign.addEventListener("click", launchCamppaign);
 
@@ -88,6 +90,18 @@ import {
         timeStyle: "long",
         dateStyle: "long",
       });
+    }
+
+    function diffDate(dateBegin, dateEnd) {
+      const begin = parseInt(dateBegin);
+      const end = parseInt(dateEnd);
+      const durationMs = end - begin;
+      const durationSec = durationMs / 1000;
+      if (durationSec < 60) return `${parseInt(durationSec)} s`;
+      const durationMin = durationSec / 60;
+      if (durationMin < 60) return `${parseInt(durationMin)} mn ${parseInt(durationSec % 60)} s`;
+      const durationHrs = durationMin / 60;
+      return `${parseInt(durationHrs)} h ${parseInt(durationMin % 60)} mn`;
     }
 
     function setTextContent(elId, text) {

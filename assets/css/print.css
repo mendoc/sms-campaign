@@ -1,0 +1,13 @@
+@media print {
+  #block-recipients {
+    break-inside: avoid; /* Moderne */
+    page-break-inside: avoid; /* Compatibilité */
+    break-after: page; /* Moderne */
+    page-break-after: always; /* Compatibilité */
+  }
+
+  #content-block {
+    margin: 0 !important;
+  }
+
+}

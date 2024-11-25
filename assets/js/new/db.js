@@ -10,14 +10,7 @@ import {
 
 (async () => {
   const firebaseConfig = {
-    apiKey: "AIzaSyBLI-SZHzfQgxAjyp0Dt90xyLnkYWYPYvs",
-    authDomain: "mes-infos.firebaseapp.com",
-    databaseURL: "https://mes-infos.firebaseio.com",
-    projectId: "mes-infos",
-    storageBucket: "mes-infos.appspot.com",
-    messagingSenderId: "738073783804",
-    appId: "1:738073783804:web:40ea2438006e43e3979679",
-    measurementId: "G-NCL06LW1VE",
+    // Votre configuration Firebase
   };
 
   // Initialize Firebase

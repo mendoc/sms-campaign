@@ -22,6 +22,14 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
     />
     <link rel="stylesheet" href="assets/css/loader.css" />
+    <style>
+      @media print {
+        #content-block {
+          width: 100% !important;
+          max-width: 100% !important;
+        }
+      }
+    </style>
   </head>
 
   <body class="animate__animated animate__fadeIn">
@@ -111,7 +119,7 @@
               </button>
             </div>
             <div id="recipientsHelp" class="form-text">
-              Ex : 074213803, 074296199, 077574651, 077881019
+              Ex : 074211800, 074789222, 077147123, 077456777
             </div>
           </div>
           <div class="mb-3">
@@ -132,7 +140,7 @@
         </form>
       </div>
     </div>
-
+    <script src="assets/js/new/db.js" type="module"></script>
     <script type="module">
       import { logout, getCurrentUser } from "./assets/js/db.js";
       import {
@@ -161,12 +169,140 @@
         });
       })();
     </script>
+    <script>
+      const CLIENT_ID = "";
+      const API_KEY = "";
+      const SCOPES = "https://www.googleapis.com/auth/spreadsheets.readonly";
 
-    <script src="assets/js/new/db.js" type="module"></script>
-    <script src="assets/js/new/new.js" defer></script>
-    <script src="assets/js/popper.min.js"></script>
-    <script src="assets/js/bootstrap.min.js"></script>
-    <script async defer src="https://apis.google.com/js/api.js"></script>
-    <script async defer src="https://accounts.google.com/gsi/client"></script>
+      let tokenClient;
+      let accessToken;
+      let pickerInited = false;
+      let gisInited = false;
+      let gapiInited = false;
+
+      function gapiLoaded() {
+        gapi.load("client", initializeGapiClient);
+      }
+
+      async function initializeGapiClient() {
+        await gapi.client.init({
+          apiKey: API_KEY,
+          discoveryDocs: [
+            "https://sheets.googleapis.com/$discovery/rest?version=v4",
+          ],
+        });
+        gapiInited = true;
+        maybeEnableButtons();
+      }
+
+      function gisLoaded() {
+        tokenClient = google.accounts.oauth2.initTokenClient({
+          client_id: CLIENT_ID,
+          scope: SCOPES,
+          callback: (tokenResponse) => {
+            if (tokenResponse && tokenResponse.access_token) {
+              accessToken = tokenResponse.access_token;
+              createPicker();
+            }
+          },
+        });
+        gisInited = true;
+        maybeEnableButtons();
+      }
+
+      function pickerCallback(data) {
+        if (
+          data[google.picker.Response.ACTION] == google.picker.Action.PICKED
+        ) {
+          const doc = data[google.picker.Response.DOCUMENTS][0];
+          const fileId = doc[google.picker.Document.ID];
+          const fileName = doc[google.picker.Document.NAME];
+          console.log(doc);
+          extractRecipients(fileId);
+        }
+      }
+
+      function createPicker() {
+        if (accessToken) {
+          const picker = new google.picker.PickerBuilder()
+            .addView(google.picker.ViewId.SPREADSHEETS)
+            .setOAuthToken(accessToken)
+            .setDeveloperKey(API_KEY)
+            .setCallback(pickerCallback)
+            .build();
+          picker.setVisible(true);
+        } else {
+          tokenClient.requestAccessToken({ prompt: "" });
+        }
+      }
+
+      function maybeEnableButtons() {
+        if (gapiInited && gisInited && pickerInited) {
+          document.getElementById("btn-import-recipients").disabled = false;
+        }
+      }
+
+      async function extractRecipients(fileId) {
+        const response = await gapi.client.sheets.spreadsheets.get({
+          spreadsheetId: fileId,
+        });
+
+        if (!response.result) return;
+
+        const sheet = response.result.sheets[0];
+        const sheetName = sheet.properties.title;
+        const range = `${sheetName}!A1:B`;
+
+        gapi.client.sheets.spreadsheets.values
+          .get({
+            spreadsheetId: fileId,
+            range: range,
+          })
+          .then(function (response) {
+            const data = response.result.values;
+            let recipients = [];
+            for (let i = 0; i < data.length; i++) {
+              // TODO Contaténer le nom du destinataire au numéro
+              if (isValidNumber(data[i][0])) recipients.push(data[i][0]);
+            }
+            document.getElementById("text-campaign-recipients").value =
+              recipients.join(", ");
+          })
+          .catch(console.log);
+      }
+
+      function isValidNumber(num) {
+        // TODO Implémenter la validation des numéros
+        return true;
+      }
+
+      document
+        .getElementById("btn-import-recipients")
+        .addEventListener("click", createPicker);
+
+      function onApiLoad() {
+        gapi.load("picker", () => {
+          pickerInited = true;
+          maybeEnableButtons();
+        });
+      }
+    </script>
+    <script
+      async
+      defer
+      src="https://apis.google.com/js/api.js"
+      onload="gapiLoaded()"
+    ></script>
+    <script
+      async
+      defer
+      src="https://accounts.google.com/gsi/client"
+      onload="gisLoaded()"
+    ></script>
+    <script
+      async
+      defer
+      src="https://apis.google.com/js/api.js?onload=onApiLoad"
+    ></script>
   </body>
 </html>

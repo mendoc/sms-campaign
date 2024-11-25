@@ -10,14 +10,7 @@ import {
 import { goToHomePage } from "./utils.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBLI-SZHzfQgxAjyp0Dt90xyLnkYWYPYvs",
-  authDomain: "mes-infos.firebaseapp.com",
-  databaseURL: "https://mes-infos.firebaseio.com",
-  projectId: "mes-infos",
-  storageBucket: "mes-infos.appspot.com",
-  messagingSenderId: "738073783804",
-  appId: "1:738073783804:web:40ea2438006e43e3979679",
-  measurementId: "G-NCL06LW1VE",
+  // Votre configuration Firebase
 };
 
 // Initialize Firebase
@@ -27,6 +20,7 @@ export const db = getFirestore(app);
 
 export function login(cberror) {
   const provider = new GoogleAuthProvider();
+  provider.addScope("https://www.googleapis.com/auth/drive.file");
   provider.addScope("https://www.googleapis.com/auth/spreadsheets.readonly");
   signInWithPopup(auth, provider)
     .then((result) => {
@@ -35,7 +29,7 @@ export function login(cberror) {
       const token = credential.accessToken;
       // The signed-in user info.
       const user = result.user;
-      console.log(token, user);
+      console.log(token, user, result);
     })
     .catch(cberror);
 }
